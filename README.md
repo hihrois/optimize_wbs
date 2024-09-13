@@ -7,3 +7,4 @@
 
 ## output
 全体の工数が最小になるWBS（問題のサイズに応じて、最適解か近似解かは切り替わる。どちらの解かをユーザは知ることができる）
+https://github.com/hihrois/optimize_wbs/issues/1#issue-2524531026
