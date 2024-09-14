@@ -1,5 +1,8 @@
 import pulp
 from dataclasses import dataclass
+from get_config import get_config
+from datetime import datetime
+import sys
 
 # @dataclass
 # class ProbremResult:
@@ -14,15 +17,35 @@ class SkillConflictException(Exception):
     pass
 
 
+def calculate_hours(project_start_date: str, task_dead_line: str, regular_time: int) -> int:
+    # yyyymmdd形式の日付文字列をdatetimeオブジェクトに変換
+    start_date = datetime.strptime(project_start_date, '%Y%m%d')
+    end_date = datetime.strptime(task_dead_line, '%Y%m%d')
+    
+    # 締め切り日と開始日の差を日数で計算
+    delta = end_date - start_date
+    total_days = delta.days + 1  # 同一の日でも1日として扱うために+1する
+
+    # 総労働時間を計算
+    total_hours = total_days * regular_time
+
+    return total_hours
+
+
 def define_and_solve(loaded_dataframe):
   tasks_df = loaded_dataframe.task_df
   employees_df = loaded_dataframe.employees_df
   skills_df = loaded_dataframe.skills_df
   dependencies_df = loaded_dataframe.dependencies_df
 
+  config = get_config()
+  project_start_date = config.get('date', 'project_start_date')
+  regular_time = config.getfloat("employee", "regular_time")
+
   # タスクリストとその処理時間
   tasks = tasks_df['Task'].tolist()
   task_times = dict(zip(tasks_df['Task'], tasks_df['ProcessingTime']))
+  task_deadline = dict(zip(tasks_df['Task'], tasks_df['DeadLineDate']))
 
   # 従業員リスト
   employees = employees_df['Employee'].tolist()
@@ -116,7 +139,11 @@ def define_and_solve(loaded_dataframe):
     for t in tasks:
       problem += makespan >= start_times[t] +  x[e, t] * task_times[t] / employee_rates[e], f"Makespan_constraint_{e}_{t}"
 
-
+  # タスク終了時間が締め切りより小さいことを追加
+  for t in tasks:
+    if task_deadline[t] > 0:
+      problem += start_times[t] + pulp.lpSum([x[e, t] * task_times[t] / employee_rates[e] for e in employees]) <= calculate_hours(project_start_date, str(int(task_deadline[t])), regular_time), f"Deadline_constraint_{t}"
+  
   # 同じ従業員が同じ時間に複数のタスクを処理しないようにする制約
   for e in employees:
     for t1 in tasks:

@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 from dataclasses import dataclass
+import sys
 
 @dataclass
 class LoadedDataframe:
@@ -23,5 +24,5 @@ def load_input_file():
   employees_df = pd.read_csv(PROJECT_ROOT_PATH+INPUT_FOLDER_PATH+'employees.csv')  # 稼働率列を含む
   skills_df = pd.read_csv(PROJECT_ROOT_PATH+INPUT_FOLDER_PATH+'skills.csv')  # スキルがない情報のみ
   dependencies_df = pd.read_csv(PROJECT_ROOT_PATH+INPUT_FOLDER_PATH+'dependencies.csv')
-
+  
   return LoadedDataframe(tasks_df, employees_df, skills_df, dependencies_df)
