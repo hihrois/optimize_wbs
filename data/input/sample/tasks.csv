@@ -1,9 +1,9 @@
-Task,ProcessingTime
-TaskA,2
-TaskB,13
+Task,ProcessingTime,DeadLineDate
+TaskA,2,20240924
+TaskB,13,20240929
 TaskC,11
 TaskD,24
-TaskE,7
+TaskE,7,20240925
 TaskF,3
 TaskG,11
 TaskH,4
@@ -15,5 +15,6 @@ TaskM,14
 TaskN,7
 TaskO,13
 TaskP,1
-TaskQ,14
+TaskQ1,7
+TaskQ2,7
 TaskR,7
