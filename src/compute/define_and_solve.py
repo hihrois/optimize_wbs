@@ -16,6 +16,9 @@ class SkillConflictException(Exception):
     # print(Exception)
     pass
 
+class InfeasibleSolutionError(Exception):
+    """解が infeasible の場合に投げられる例外"""
+    pass
 
 def calculate_hours(project_start_date: str, task_dead_line: str, regular_time: int) -> int:
     # yyyymmdd形式の日付文字列をdatetimeオブジェクトに変換
@@ -155,6 +158,10 @@ def define_and_solve(loaded_dataframe):
 
   # 6. 問題の解決
   problem.solve()
+  # 結果が infeasible かどうかをチェック
+  if pulp.LpStatus[problem.status] == 'Infeasible':
+      raise InfeasibleSolutionError("The problem is infeasible")
+
 
   # 7. 結果の表示
   task_assignments = []

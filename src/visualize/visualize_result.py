@@ -2,6 +2,23 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from get_config import get_config
 from datetime import datetime, timedelta
+import jpholiday  # 日本の祝日ライブラリ
+
+# 営業日のみを扱うための関数（祝日も除外）
+def generate_business_days(start_date, total_days):
+    business_days = []
+    current_date = start_date
+    days_added = 0
+
+    # 営業日のみを取得するループ
+    while days_added < total_days:
+        # 平日（月〜金）かつ日本の祝日でない日をチェック
+        if current_date.weekday() < 5 and not jpholiday.is_holiday(current_date):
+            business_days.append(current_date.strftime('%Y-%m-%d'))
+            days_added += 1
+        current_date += timedelta(days=1)
+
+    return business_days
 
 # 8. ガントチャートの描画
 def plot_gantt_chart(result):
@@ -43,12 +60,14 @@ def plot_gantt_chart(result):
                     xytext=(before_end, task_pos[before]),  # 矢印の元
                     arrowprops=dict(arrowstyle="->", color='black'))
 
-    # X軸の目盛りを「8時間=1日」として調整し、日付をproject_start_dateに基づいて設定
+    # X軸の目盛りを「8時間=1日」として調整し、日付を営業日のみをproject_start_dateに基づいて設定
     max_time = max([end for _, _, _, end in task_assignments])  # 最大時間を取得
     total_days = max_time // regular_time + 1  # 日数を計算
-    date_labels = [(project_start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(int(total_days) + 1)]
 
-    ax.set_xticks([i * regular_time for i in range(int(total_days) + 1)])  # 日単位の目盛りを設定
+    # 営業日のみのラベルを作成（祝日も除外）
+    date_labels = generate_business_days(project_start_date, int(total_days))
+
+    ax.set_xticks([i * regular_time for i in range(len(date_labels))])  # 営業日単位の目盛りを設定
     ax.set_xticklabels(date_labels)  # 日付ラベルに変換
     ax.set_xticklabels(date_labels, rotation=90)  # 日付ラベルを縦に回転
 
