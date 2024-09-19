@@ -1,9 +1,8 @@
 BeforeTask,AfterTask
 TaskA,TaskB
 TaskB,TaskC
-TaskC,TaskD
 TaskF,TaskE
 TaskL,TaskA
 TaskM,TaskB
 TaskN,TaskE
-TaskN,TaskF
+TaskF,TaskA

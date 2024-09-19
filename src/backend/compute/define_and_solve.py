@@ -1,8 +1,10 @@
 import pulp
 from dataclasses import dataclass
-from get_config import get_config
+from src.backend.get_config import get_config
 from datetime import datetime
 import sys
+from datetime import datetime, timedelta
+import jpholiday  # 日本の祝日ライブラリ
 
 # @dataclass
 # class ProbremResult:
@@ -12,27 +14,36 @@ import sys
 #     dependencies_df: pd.DataFrame
 
 class SkillConflictException(Exception):
-    """1と0の両方が同じタスクに存在する場合の例外"""
-    # print(Exception)
-    pass
+  """1と0の両方が同じタスクに存在する場合の例外"""
+  # print(Exception)
+  pass
 
 class InfeasibleSolutionError(Exception):
-    """解が infeasible の場合に投げられる例外"""
-    pass
+  """解が infeasible の場合に投げられる例外"""
+  pass
+
 
 def calculate_hours(project_start_date: str, task_dead_line: str, regular_time: int) -> int:
-    # yyyymmdd形式の日付文字列をdatetimeオブジェクトに変換
-    start_date = datetime.strptime(project_start_date, '%Y%m%d')
-    end_date = datetime.strptime(task_dead_line, '%Y%m%d')
-    
-    # 締め切り日と開始日の差を日数で計算
-    delta = end_date - start_date
-    total_days = delta.days + 1  # 同一の日でも1日として扱うために+1する
+  # yyyymmdd形式の日付文字列をdatetimeオブジェクトに変換
+  start_date = datetime.strptime(project_start_date, '%Y%m%d')
+  end_date = datetime.strptime(task_dead_line, '%Y%m%d')
+  
+  # 労働日をカウントするための変数
+  total_days = 0
+  
+  # 現在の日付をスタートとしてループし、土日祝日を除外して日数をカウント
+  current_date = start_date
+  while current_date <= end_date:
+    # 平日かつ祝日でない場合のみ労働日としてカウント
+    if current_date.weekday() < 5 and not jpholiday.is_holiday(current_date):
+      total_days += 1
+    current_date += timedelta(days=1)
 
-    # 総労働時間を計算
-    total_hours = total_days * regular_time
+  # 総労働時間を計算
+  total_hours = total_days * regular_time
 
-    return total_hours
+  return total_hours
+
 
 
 def define_and_solve(loaded_dataframe):
@@ -130,23 +141,26 @@ def define_and_solve(loaded_dataframe):
           if employee_skills[e][t] == 0:
               problem += x[e, t] == 0, f"{e}_cannot_do_{t}"
 
-
   # タスクの依存関係の制約 (BeforeTaskの終了時間 < AfterTaskの開始時間)
   for e in employees:
     for before, after in dependencies:
       problem += start_times[after] >= start_times[before] + x[e, before] * task_times[before] / employee_rates[e] , f"Dependency_{e}_{before}_before_{after}"
 
+  # for name, constraint in problem.constraints.items():
+  #   print(f"{name}: {constraint}")
+
+  # sys.exit()
 
   # 各タスクの終了時間はメイクスパン以下でなければならない
   for e in employees:
     for t in tasks:
-      problem += makespan >= start_times[t] +  x[e, t] * task_times[t] / employee_rates[e], f"Makespan_constraint_{e}_{t}"
+      problem += makespan >= start_times[t] + x[e, t] * task_times[t] / employee_rates[e], f"Makespan_constraint_{e}_{t}"
 
   # タスク終了時間が締め切りより小さいことを追加
   for t in tasks:
     if task_deadline[t] > 0:
       problem += start_times[t] + pulp.lpSum([x[e, t] * task_times[t] / employee_rates[e] for e in employees]) <= calculate_hours(project_start_date, str(int(task_deadline[t])), regular_time), f"Deadline_constraint_{t}"
-  
+
   # 同じ従業員が同じ時間に複数のタスクを処理しないようにする制約
   for e in employees:
     for t1 in tasks:
@@ -155,7 +169,7 @@ def define_and_solve(loaded_dataframe):
           problem += start_times[t1] + task_times[t1] / employee_rates[e] <= start_times[t2] + (2 - x[e, t1] - x[e, t2]) * 9999, f"Overlap_{e}_{t1}_{t2}_1"
         elif t1 > t2:
           problem += start_times[t2] + task_times[t2] / employee_rates[e] <= start_times[t1] + (2 - x[e, t1] - x[e, t2]) * 9999, f"Overlap_{e}_{t1}_{t2}_2"
-
+  
   # 6. 問題の解決
   problem.solve()
   # 結果が infeasible かどうかをチェック
