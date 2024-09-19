@@ -1,8 +1,11 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from get_config import get_config
+from src.backend.get_config import get_config
 from datetime import datetime, timedelta
 import jpholiday  # 日本の祝日ライブラリ
+import uuid
+import os
+from dotenv import load_dotenv
 
 # 営業日のみを扱うための関数（祝日も除外）
 def generate_business_days(start_date, total_days):
@@ -79,4 +82,17 @@ def plot_gantt_chart(result):
     # グリッドとフォーマットの設定
     ax.grid(True)
     plt.tight_layout()
+
+    load_dotenv()
+
+    # .envファイルから環境変数を取得
+    PROJECT_ROOT_PATH = os.getenv('PROJECT_ROOT_PATH')
+
+    # UUIDを使って一意なファイル名を作成
+    unique_filename = f"{PROJECT_ROOT_PATH}data\output\{uuid.uuid4()}.png"
+    
+    # 画像を保存
     plt.show()
+    # plt.savefig(unique_filename)
+
+    return unique_filename  # 保存したファイル名を返す
