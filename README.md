@@ -71,7 +71,7 @@ docker run -d -p 8501:8501 --name my-running-app my-app
 
 # 実行中のコンテナに接続してbashシェルに入る
 docker exec -it my-running-app /bin/bash
-
+```
 
 ### 3.コマンド実行
 計算を実行する関数を実行する
@@ -79,3 +79,4 @@ docker exec -it my-running-app /bin/bash
 ```bash
 #プロジェクトルートディレクトリ上で
 python src/backend/main.py
+```
