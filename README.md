@@ -15,7 +15,7 @@
 
 ## How to use
 ### 1.必要な情報をcsvに入力する
-計算時のinputとなるフォルダを作成し、.envのINPUT_FOLDER_PATHに登録してください。  
+計算時のinputとなるフォルダを作成し、.envのINPUT_FOLDER_PATHにパスを登録してください。  
 フォルダ内には以下のファイルを作成・入力してください。
 #### tasks.csv
 タスクに関わる情報を入力するファイル。
