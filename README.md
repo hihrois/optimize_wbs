@@ -14,7 +14,7 @@
 ![WBS](https://github.com/user-attachments/assets/b0f94470-ee07-4336-8bdf-34697f4a2cf7)
 
 ## How to use
-### 入力方法
+### 1.必要な情報をcsv二入力する
 #### tasks.csv
 タスクに関わる情報を入力するファイル。
 
@@ -56,3 +56,20 @@ PJTメンバーとタスクの関係を記載するファイル。
   - タスク名。Employeeが「担当できないタスク名を入力する。tasks.csvと紐づけられるよう、同名を入力する。（例）バク転
 - IsCapable
   - タスクを担当可能かを入力する。（例）1または0
+
+
+### 2.Dockerを起動する
+# プロジェクトのセットアップとDockerの利用方法
+
+```bash
+# Dockerイメージをビルド
+docker build -t my-app .
+
+# コンテナを起動
+docker run -d -p 8501:8501 --name my-running-app my-app
+
+# 実行中のコンテナに接続してbashシェルに入る
+docker exec -it my-running-app /bin/bash
+
+# コンテナを停止
+docker stop my-running-app
