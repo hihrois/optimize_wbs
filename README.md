@@ -50,6 +50,7 @@ PJTメンバーとタスクの関係を記載するファイル。
 - IsCapable=0となる設定が１行以上入力されている場合、IsCapable=0と入力されたEmployee以外の中から担当者が決まる。
 - IsCapable=0とIsCapable=1が混在する入力はエラー扱いとなる。
 
+<入力項目>
 - Employee
   - 従業員名。employees.csvと紐づけられるよう、同名を入力する。（例）Nakahara
 - Task
