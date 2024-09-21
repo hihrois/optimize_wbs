@@ -71,6 +71,3 @@ docker run -d -p 8501:8501 --name my-running-app my-app
 
 # 実行中のコンテナに接続してbashシェルに入る
 docker exec -it my-running-app /bin/bash
-
-# コンテナを停止
-docker stop my-running-app
