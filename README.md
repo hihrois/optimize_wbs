@@ -14,7 +14,9 @@
 ![WBS](https://github.com/user-attachments/assets/b0f94470-ee07-4336-8bdf-34697f4a2cf7)
 
 ## How to use
-### 1.必要な情報をcsv二入力する
+### 1.必要な情報をcsvに入力する
+計算時のinputとなるフォルダを作成し、.envのINPUT_FOLDER_PATHに登録してください。  
+フォルダ内には以下のファイルを作成・入力してください。
 #### tasks.csv
 タスクに関わる情報を入力するファイル。
 
