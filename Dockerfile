@@ -7,9 +7,9 @@ COPY . /app
 
 # 必要なパッケージをインストール（システムパッケージとPythonパッケージ）
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+  apt-get install -y --no-install-recommends \
+  build-essential \
+  && rm -rf /var/lib/apt/lists/*
 
 # pandas, pulp, streamlitの依存関係をインストール
 RUN pip install -r requirements.txt
