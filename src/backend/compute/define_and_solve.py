@@ -1,13 +1,14 @@
 import pulp
 from dataclasses import dataclass
-from datetime import datetime
 import sys
 from datetime import datetime, timedelta
 import jpholiday  # 日本の祝日ライブラリ
 import os
+import pandas as pd
 
 sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
 from src.backend.config.load_config import load_config
+from src.backend.compute.result_class import ResultClass
 
 # @dataclass
 # class ProbremResult:
@@ -54,20 +55,26 @@ def calculate_hours(
     return total_hours
 
 
-def define_and_solve(loaded_dataframe):
-    tasks_df = loaded_dataframe.task_df
-    employees_df = loaded_dataframe.employees_df
-    skills_df = loaded_dataframe.skills_df
-    dependencies_df = loaded_dataframe.dependencies_df
+def define_and_solve(loader):
+    tasks_df = loader.loaded_dataframe.task_df
+    employees_df = loader.loaded_dataframe.employees_df
+    skills_df = loader.loaded_dataframe.skills_df
+    dependencies_df = loader.loaded_dataframe.dependencies_df
 
-    config = load_config()["compute"]
+    # config = load_config()["compute"]
+    # project_start_date = config["project"]["start_date"]
+    # regular_time = config["employee"]["regular_time"]
+
+    config = loader.config_input["common"]
     project_start_date = config["project"]["start_date"]
     regular_time = config["employee"]["regular_time"]
 
     # タスクリストとその処理時間
     tasks = tasks_df["Task"].tolist()
     task_times = dict(zip(tasks_df["Task"], tasks_df["ProcessingTime"]))
-    task_deadline = dict(zip(tasks_df["Task"], tasks_df["DeadLineDate"]))
+    task_deadline = dict(
+        zip(tasks_df["Task"], tasks_df["DeadLineDate"].astype(pd.Int64Dtype()))
+    )
 
     # 従業員リスト
     employees = employees_df["Employee"].tolist()
@@ -234,13 +241,31 @@ def define_and_solve(loaded_dataframe):
     # 最小化されたメイクスパン（最後のタスク終了時間）
     print(f"Makespan (total time): {pulp.value(makespan)} hours")
 
-    result = {
-        "problem": problem,
-        "task_assignments": task_assignments,
-        "employees": employees,
-        "tasks": tasks,
-        "dependencies": dependencies,
-        "start_times_dict": start_times_dict,
-    }
+    # result = {
+    #     "problem": problem,
+    #     "task_assignments": task_assignments,
+    #     "employees": employees,
+    #     "tasks": tasks,
+    #     "dependencies": dependencies,
+    #     "start_times_dict": start_times_dict,
+    # }
 
-    return result
+    result_class = ResultClass(
+        problem=problem,
+        task_assignments=task_assignments,
+        employees=employees,
+        tasks=tasks,
+        dependencies=dependencies,
+        start_times_dict=start_times_dict,
+    )
+
+    print(result_class.task_assignments_list)
+
+    # print(type(result))
+    # print(type(task_assignments))
+    # print(type(employees))
+    # print(type(tasks))
+    # print(type(dependencies))
+    # print(type(start_times_dict))
+
+    return result_class

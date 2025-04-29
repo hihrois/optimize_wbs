@@ -9,19 +9,19 @@ sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
 import pandas as pd
 from src.backend.load.load_input_file import load_input_file
 from src.backend.compute.define_and_solve import define_and_solve
-from src.backend.visualize.visualize_result import plot_gantt_chart
+from src.backend.output.visualize_result import plot_gantt_chart
 
 
 def main():
     # 読み込み
-    loaded_dataframe = load_input_file()
+    loader = load_input_file()
 
     # 定式化・計算
-    result = define_and_solve(loaded_dataframe)
+    result_class = define_and_solve(loader)
 
     # 可視化・出力
     # ガントチャートを表示
-    result_image_file_name = plot_gantt_chart(result)
+    result_image_file_name = plot_gantt_chart(loader, result_class)
 
     return result_image_file_name
 

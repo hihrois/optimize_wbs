@@ -1,4 +1,10 @@
 ---
+common:
+  project:
+    start_date: "20240917" # yyyymmdd
+  employee:
+    regular_time: 8
+
 task:
   - task_name: "assign_member"
     processing_time: 5
@@ -8,13 +14,15 @@ task:
 
   - task_name: "make_contract"
     processing_time: 10
-    deadline: "20240917"
+    deadline: "20241111"
+    # depends_on:
+    #   - "assign_member"
 
 employee:
   - name: "Alice"
-    rate: 0.8
+    rate: 1
   - name: "Bob"
-    rate: 0.5
+    rate: 1
 
 skill:
   - employee: "Alice"

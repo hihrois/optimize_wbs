@@ -11,7 +11,7 @@ from src.backend.config.load_config import load_config
 from src.backend.load.loaded_dataframe import LoadedDataframe
 
 
-class InputLoadStrategy(ABC):
+class OutputStrategy(ABC):
     def __init__(self):
         # .envファイルの内容を読み込む
         load_dotenv()
@@ -20,8 +20,6 @@ class InputLoadStrategy(ABC):
         self.project_root_path = os.getenv("PROJECT_ROOT_PATH")
         self.config = load_config()["load"]
         self.input_folder_path = self.config["input_folder_path"]
-
-        self.config_input = None
 
         self.loaded_dataframe = LoadedDataframe(
             pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
@@ -32,7 +30,7 @@ class InputLoadStrategy(ABC):
         pass
 
 
-class CsvLoad(InputLoadStrategy):
+class CsvLoader(InputLoaderStrategy):
     def load_input_file(self) -> LoadedDataframe:
         # CSVからデータを読み込む
         self.loaded_dataframe.task_df = pd.read_csv(
@@ -52,17 +50,17 @@ class CsvLoad(InputLoadStrategy):
         return self.loaded_dataframe
 
 
-class YamlLoad(InputLoadStrategy):
+class YamlLoader(InputLoaderStrategy):
     def load_input_file(self) -> LoadedDataframe:
         root_path = self.project_root_path + self.input_folder_path + "input.yml"
         with open(root_path, "r") as f:
-            self.config_input = yaml.safe_load(f)
+            config = yaml.safe_load(f)
 
         # 1. tasks_df
         task_rows = []
         dependencies_rows = []
 
-        for task in self.config_input["task"]:
+        for task in config["task"]:
             task_name = task["task_name"]
             processing_time = task.get("processing_time", None)
             deadline = task.get("deadline", None)
@@ -85,14 +83,14 @@ class YamlLoad(InputLoadStrategy):
 
         # 2. employees_df
         employee_rows = []
-        for emp in self.config_input["employee"]:
+        for emp in config["employee"]:
             employee_rows.append({"Employee": emp["name"], "Rate": emp["rate"]})
 
         self.loaded_dataframe.employees_df = pd.DataFrame(employee_rows)
 
         # 3. skills_df
         skill_rows = []
-        for skill in self.config_input["skill"]:
+        for skill in config["skill"]:
             skill_rows.append(
                 {
                     "Employee": skill["employee"],
@@ -109,7 +107,7 @@ class YamlLoad(InputLoadStrategy):
 def load_input_file():
     # インスタンス化
     # loader = CsvLoader()
-    loader = YamlLoad()
+    loader = YamlLoader()
 
     # データを読み込む
     loaded_dataframe = loader.load_input_file()
@@ -119,4 +117,4 @@ def load_input_file():
     # validation
     loaded_dataframe.validate()
 
-    return loader
+    return loaded_dataframe

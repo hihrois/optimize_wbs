@@ -6,6 +6,7 @@ import uuid
 import os
 from dotenv import load_dotenv
 import sys
+import japanize_matplotlib
 
 sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
 from src.backend.config.load_config import load_config
@@ -25,7 +26,6 @@ def generate_business_days(start_date, total_days):
     # 営業日のみを取得するループ
     while days_added < total_days:
         if is_business_day(current_date):
-            # if current_date.weekday() < 5 and not jpholiday.is_holiday(current_date):
             business_days.append(current_date.strftime("%Y-%m-%d"))
             days_added += 1
         current_date += timedelta(days=1)
@@ -34,12 +34,26 @@ def generate_business_days(start_date, total_days):
 
 
 # 8. ガントチャートの描画
-def plot_gantt_chart(result):
-    problem, task_assignments, employees, tasks, dependencies, start_times_dict = (
-        result.values()
-    )
+def plot_gantt_chart(loader, result_class):
 
-    config = load_config()["compute"]
+    # def __init__(
+    #     self, problem, task_assignments, employees, tasks, dependencies, start_times_dict
+    # ):
+    #     self.problem_list = problem
+    #     self.task_assignments_list = task_assignments
+    #     self.employees_list = employees
+    #     self.tasks_list = tasks
+    #     self.dependencies_list = dependencies
+    #     self.start_times_dict = start_times_dict
+
+    problem = result_class.problem_list
+    task_assignments = result_class.task_assignments_list
+    employees = result_class.employees_list
+    tasks = result_class.tasks_list
+    dependencies = result_class.dependencies_list
+    start_times_dict = result_class.start_times_dict
+
+    config = loader.config_input["common"]
     project_start_date = config["project"]["start_date"]
     regular_time = config["employee"]["regular_time"]
 
