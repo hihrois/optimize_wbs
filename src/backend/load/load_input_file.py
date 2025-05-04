@@ -2,6 +2,7 @@ import os
 import sys
 from abc import ABC, abstractmethod
 
+import numpy as np
 import pandas as pd
 import yaml
 from dotenv import load_dotenv
@@ -78,7 +79,8 @@ class CsvLoad(AbstractInputLoad):
             self.project_root_path + self.input_folder_path + "dependencies.csv"
         )
 
-        print(self.loaded_dataframe)
+        print(self.loaded_dataframe.task_df)
+        sys.exit()
         return self.loaded_dataframe
 
 
@@ -105,8 +107,8 @@ class YamlLoad(AbstractInputLoad):
 
         for task in self.config_input["task"]:
             task_name = task["task_name"]
-            processing_time = task.get("processing_time", None)
-            deadline = task.get("deadline", None)
+            processing_time = task.get("processing_time", np.nan)
+            deadline = task.get("deadline", np.nan)
 
             task_rows.append(
                 {
@@ -142,7 +144,6 @@ class YamlLoad(AbstractInputLoad):
             )
 
         self.loaded_dataframe.skills_df = pd.DataFrame(skill_rows)
-
         return self.loaded_dataframe
 
 
@@ -153,6 +154,7 @@ def load_input_file() -> AbstractInputLoad:
     Returns:
         AbstractInputLoad: データ読み込みを行ったローダーのインスタンス
     """
+    # loader = CsvLoad()
     loader = YamlLoad()
     loader.load_input_file()
     return loader

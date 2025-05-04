@@ -10,13 +10,6 @@ sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
 from src.backend.compute.result_class import ResultClass
 from src.backend.load.load_input_file import AbstractInputLoad
 
-# @dataclass
-# class ProbremResult:
-#     task_df: pd.DataFrame
-#     employees_df: pd.DataFrame
-#     skills_df: pd.DataFrame
-#     dependencies_df: pd.DataFrame
-
 
 class SkillConflictException(Exception):
     """1と0の両方が同じタスクに存在する場合の例外"""
@@ -224,17 +217,18 @@ def define_and_solve(loader: AbstractInputLoad) -> ResultClass:
 
     # タスク終了時間が締め切りより小さいことを追加
     for t in tasks:
-        if task_deadline[t] > 0:
-            problem += (
-                start_times[t]
-                + pulp.lpSum(
-                    [x[e, t] * task_times[t] / employee_rates[e] for e in employees]
-                )
-                <= calculate_hours(
-                    project_start_date, str(int(task_deadline[t])), regular_time
-                ),
-                f"Deadline_constraint_{t}",
+        if isinstance(task_deadline[t], pd._libs.missing.NAType):
+            continue
+        problem += (
+            start_times[t]
+            + pulp.lpSum(
+                [x[e, t] * task_times[t] / employee_rates[e] for e in employees]
             )
+            <= calculate_hours(
+                project_start_date, str(int(task_deadline[t])), regular_time
+            ),
+            f"Deadline_constraint_{t}",
+        )
 
     # 同じ従業員が同じ時間に複数のタスクを処理しないようにする制約
     for e in employees:

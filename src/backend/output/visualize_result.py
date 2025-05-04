@@ -1,37 +1,18 @@
 import os
 import sys
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 
-import jpholiday  # 日本の祝日ライブラリ
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
+load_dotenv()
+
 sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
 from src.backend.compute.result_class import ResultClass
 from src.backend.load.load_input_file import AbstractInputLoad
-
-
-def is_business_day(date):
-    """指定された日付が営業日かどうかを判定する関数"""
-    return date.weekday() < 5 and not jpholiday.is_holiday(date)
-
-
-# 営業日のみを扱うための関数（祝日も除外）
-def generate_business_days(start_date, total_days):
-    business_days = []
-    current_date = start_date
-    days_added = 0
-
-    # 営業日のみを取得するループ
-    while days_added < total_days:
-        if is_business_day(current_date):
-            business_days.append(current_date.strftime("%Y-%m-%d"))
-            days_added += 1
-        current_date += timedelta(days=1)
-
-    return business_days
+from src.backend.output.utils import generate_business_days
 
 
 # 8. ガントチャートの描画

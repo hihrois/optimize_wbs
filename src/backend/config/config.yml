@@ -1,6 +1,8 @@
 ---
 load:
-  input_folder_path: "data/input/sample_yml/" # relative path to the input folder
+  # input_folder_path: "data/input/sample_yml/" # relative path to the input folder
+  # input_folder_path: "data/input/sample/" # relative path to the input folder
+  input_folder_path: "data/input/sample_for_pytest/" # relative path to the input folder
 # compute:
 #   project:
 #     start_date: "20240917" # yyyymmdd

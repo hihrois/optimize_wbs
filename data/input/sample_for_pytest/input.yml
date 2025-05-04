@@ -1,0 +1,88 @@
+common:
+  project:
+    start_date: "20240917"  # yyyymmdd
+  employee:
+    regular_time: 8
+
+task:
+  - task_name: "task_01"
+    processing_time: 5
+    deadline: "20240920"
+    depends_on:
+      - "task_03"
+
+  - task_name: "task_02"
+    processing_time: 7
+    depends_on:
+      - "task_03"
+
+  - task_name: "task_03"
+    processing_time: 10
+
+  - task_name: "task_04"
+    processing_time: 4
+    depends_on:
+      - "task_01"
+
+  - task_name: "task_05"
+    processing_time: 6
+
+  - task_name: "task_06"
+    processing_time: 3
+
+  - task_name: "task_07"
+    processing_time: 8
+
+  - task_name: "task_08"
+    processing_time: 9
+    depends_on:
+      - "task_06"
+
+  - task_name: "task_09"
+    processing_time: 7
+
+  - task_name: "task_10"
+    processing_time: 5
+
+  - task_name: "task_11"
+    processing_time: 6
+
+  - task_name: "task_12"
+    processing_time: 4
+
+  - task_name: "task_13"
+    processing_time: 6
+    depends_on:
+      - "task_10"
+      - "task_11"
+
+  - task_name: "task_14"
+    processing_time: 9
+
+  - task_name: "task_15"
+    processing_time: 5
+    depends_on:
+      - "task_14"
+
+employee:
+  - name: "Alice"
+    rate: 1
+
+  - name: "Bob"
+    rate: 1
+
+  - name: "Charlie"
+    rate: 1
+
+skill:
+  - employee: "Alice"
+    task: "task_01"
+    is_capable: false
+
+  - employee: "Alice"
+    task: "task_02"
+    is_capable: true
+
+  - employee: "Bob"
+    task: "task_02"
+    is_capable: true
