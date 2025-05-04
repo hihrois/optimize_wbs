@@ -11,15 +11,6 @@ from src.backend.output.utils import generate_business_days, is_business_day
 
 
 def convert_into_datetime(date_str):
-    """
-    文字列形式の日付をdatetimeオブジェクトに変換する関数。
-
-    Args:
-        date_str (str): 変換する日付の文字列（"YYYYMMDD"形式）。
-
-    Returns:
-        datetime: 変換されたdatetimeオブジェクト。
-    """
     return datetime.strptime(date_str, "%Y%m%d")
 
 

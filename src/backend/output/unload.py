@@ -101,13 +101,7 @@ class CsvUnloader(AbstractUnload):
         input_folder_path = config["input_folder_path"]
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_dir = project_root_path + input_folder_path.replace("input", "output")
-        output_path = (
-            project_root_path
-            + input_folder_path.replace("input", "output")
-            + "output_"
-            + timestamp
-            + ".csv"
-        )
+        output_path = f"{output_dir}output_{timestamp}.csv"
 
         # ヘッダーも設定したいならここで定義
         header = ["Employee", "Task", "StartTime", "EndTime"]

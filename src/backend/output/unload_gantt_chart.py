@@ -1,6 +1,5 @@
 import os
 import sys
-import uuid
 from datetime import datetime
 
 import matplotlib.patches as mpatches
@@ -11,12 +10,13 @@ load_dotenv()
 
 sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
 from src.backend.compute.result_class import ResultClass
+from src.backend.config.load_config import load_config
 from src.backend.load.load_input_file import AbstractInputLoad
 from src.backend.output.utils import generate_business_days
 
 
 # 8. ガントチャートの描画
-def plot_gantt_chart(loader: AbstractInputLoad, result_class: ResultClass) -> str:
+def unload_gantt_chart(loader: AbstractInputLoad, result_class: ResultClass) -> str:
     """
     タスク割り当て結果に基づいて、従業員ごとのガントチャートを描画・保存する。
 
@@ -120,13 +120,18 @@ def plot_gantt_chart(loader: AbstractInputLoad, result_class: ResultClass) -> st
     load_dotenv()
 
     # .envファイルから環境変数を取得
-    PROJECT_ROOT_PATH = os.getenv("PROJECT_ROOT_PATH")
+    project_root_path = os.getenv("PROJECT_ROOT_PATH")
+    config = load_config()["load"]
+    input_folder_path = config["input_folder_path"]
+    output_dir = project_root_path + input_folder_path.replace("input", "output")
 
-    # UUIDを使って一意なファイル名を作成
-    unique_filename = f"{PROJECT_ROOT_PATH}data\output\{uuid.uuid4()}.png"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    unique_filename = f"output_{timestamp}.png"
+    output_path = output_dir + unique_filename
+    print(output_path)
 
     # 画像を保存
-    plt.show()
-    # plt.savefig(unique_filename)
+    # plt.show()
+    plt.savefig(output_path)
 
     return unique_filename  # 保存したファイル名を返す

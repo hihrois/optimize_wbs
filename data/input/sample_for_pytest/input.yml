@@ -66,13 +66,13 @@ task:
 
 employee:
   - name: "Alice"
-    rate: 1
+    rate: 0.8
 
   - name: "Bob"
     rate: 1
 
   - name: "Charlie"
-    rate: 1
+    rate: 0.5
 
 skill:
   - employee: "Alice"

@@ -10,8 +10,7 @@ sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
 from src.backend.compute.define_and_solve import define_and_solve
 from src.backend.load.load_input_file import load_input_file
 from src.backend.output.unload import unload_result
-from backend.output.unload_result import plot_gantt_chart
-
+from src.backend.output.unload_gantt_chart import unload_gantt_chart
 
 
 def main():
@@ -22,11 +21,9 @@ def main():
     result_class = define_and_solve(loaded_info)
 
     # 可視化・出力
-    # ガントチャートを表示
-    result_image_file_name = plot_gantt_chart(loaded_info, result_class)
+    # ガントチャートを作成・保存
+    unload_gantt_chart(loaded_info, result_class)
     unload_result(loaded_info, result_class)
-
-    return result_image_file_name
 
 
 if __name__ == "__main__":
