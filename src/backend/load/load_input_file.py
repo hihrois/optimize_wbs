@@ -13,15 +13,19 @@ from src.backend.load.loaded_dataframe import LoadedDataframe
 
 
 class AbstractInputLoad(ABC):
-    def __init__(self):
-        # .envファイルの内容を読み込む
-        load_dotenv()
+    """
+    入力データの読み込みを抽象化した基底クラス。
+    サブクラスで load_input_file メソッドを実装する必要がある。
+    """
 
-        # .envファイルから環境変数を取得
+    def __init__(self):
+        """
+        環境変数や設定ファイルを読み込み、プロジェクトのパスや設定情報を初期化する。
+        """
+        load_dotenv()
         self.project_root_path = os.getenv("PROJECT_ROOT_PATH")
         self.config = load_config()["load"]
         self.input_folder_path = self.config["input_folder_path"]
-
         self.config_input = None
 
         self.loaded_dataframe = LoadedDataframe(
@@ -30,25 +34,46 @@ class AbstractInputLoad(ABC):
 
     @abstractmethod
     def load_input_file(self, path: str) -> LoadedDataframe:
+        """
+        入力ファイルを読み込み、LoadedDataframe に格納する。
+
+        Args:
+            path (str): 入力ファイルのパス
+
+        Returns:
+            LoadedDataframe: 読み込まれたデータフレームのセット
+        """
         pass
 
-    def validate(self):
-        # validation
+    def validate(self) -> None:
+        """
+        読み込まれたデータの整合性を検証する。
+        """
         self.loaded_dataframe.validate()
 
 
 class CsvLoad(AbstractInputLoad):
+    """
+    CSVファイルを読み込むためのローダークラス。
+    """
+
     def load_input_file(self) -> LoadedDataframe:
-        # CSVからデータを読み込む
+        """
+        複数のCSVファイル（tasks, employees, skills, dependencies）を読み込み、
+        LoadedDataframe に格納して返す。
+
+        Returns:
+            LoadedDataframe: 読み込まれたデータフレームのセット
+        """
         self.loaded_dataframe.task_df = pd.read_csv(
             self.project_root_path + self.input_folder_path + "tasks.csv"
         )
         self.loaded_dataframe.employees_df = pd.read_csv(
             self.project_root_path + self.input_folder_path + "employees.csv"
-        )  # 稼働率列を含む
+        )
         self.loaded_dataframe.skills_df = pd.read_csv(
             self.project_root_path + self.input_folder_path + "skills.csv"
-        )  # スキルがない情報のみ
+        )
         self.loaded_dataframe.dependencies_df = pd.read_csv(
             self.project_root_path + self.input_folder_path + "dependencies.csv"
         )
@@ -58,7 +83,18 @@ class CsvLoad(AbstractInputLoad):
 
 
 class YamlLoad(AbstractInputLoad):
+    """
+    YAMLファイルを読み込むためのローダークラス。
+    """
+
     def load_input_file(self) -> LoadedDataframe:
+        """
+        YAMLファイル（input.yml）を読み込み、各構成要素（tasks, employees, skills, dependencies）
+        をデータフレームに変換して LoadedDataframe に格納する。
+
+        Returns:
+            LoadedDataframe: 読み込まれたデータフレームのセット
+        """
         root_path = self.project_root_path + self.input_folder_path + "input.yml"
         with open(root_path, "r") as f:
             self.config_input = yaml.safe_load(f)
@@ -80,7 +116,6 @@ class YamlLoad(AbstractInputLoad):
                 }
             )
 
-            # 依存関係
             depends_on = task.get("depends_on", [])
             for dep in depends_on:
                 dependencies_rows.append({"BeforeTask": dep, "AfterTask": task_name})
@@ -102,7 +137,7 @@ class YamlLoad(AbstractInputLoad):
                 {
                     "Employee": skill["employee"],
                     "Task": skill["task"],
-                    "IsCapable": int(skill["is_capable"]),  # true/falseを1/0にする
+                    "IsCapable": int(skill["is_capable"]),
                 }
             )
 
@@ -111,14 +146,13 @@ class YamlLoad(AbstractInputLoad):
         return self.loaded_dataframe
 
 
-def load_input_file():
-    # インスタンス化
-    # loader = CsvLoader()
+def load_input_file() -> AbstractInputLoad:
+    """
+    デフォルトで YamlLoad を使用して入力データを読み込み、ローダーインスタンスを返す。
+
+    Returns:
+        AbstractInputLoad: データ読み込みを行ったローダーのインスタンス
+    """
     loader = YamlLoad()
-
-    # データを読み込む
-    loaded_dataframe = loader.load_input_file()
-    # print(loaded_dataframe.skills_df)
-    # sys.exit(0)
-
+    loader.load_input_file()
     return loader

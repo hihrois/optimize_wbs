@@ -1,14 +1,14 @@
-import pulp
-from dataclasses import dataclass
+import os
 import sys
 from datetime import datetime, timedelta
+
 import jpholiday  # 日本の祝日ライブラリ
-import os
 import pandas as pd
+import pulp
 
 sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
-from src.backend.config.load_config import load_config
 from src.backend.compute.result_class import ResultClass
+from src.backend.load.load_input_file import AbstractInputLoad
 
 # @dataclass
 # class ProbremResult:
@@ -34,6 +34,17 @@ class InfeasibleSolutionError(Exception):
 def calculate_hours(
     project_start_date: str, task_dead_line: str, regular_time: int
 ) -> int:
+    """
+    プロジェクト開始日から締切日までの平日かつ祝日を除いた労働日数を基に、総労働時間を計算する。
+
+    Args:
+        project_start_date (str): プロジェクトの開始日（"yyyymmdd"形式の文字列）。
+        task_dead_line (str): タスクの締切日（"yyyymmdd"形式の文字列）。
+        regular_time (int): 1日あたりの労働時間（時間単位、例：8）。
+
+    Returns:
+        int: 総労働時間（平日かつ祝日を除く日数 × 1日あたりの労働時間）。
+    """
     # yyyymmdd形式の日付文字列をdatetimeオブジェクトに変換
     start_date = datetime.strptime(project_start_date, "%Y%m%d")
     end_date = datetime.strptime(task_dead_line, "%Y%m%d")
@@ -55,7 +66,30 @@ def calculate_hours(
     return total_hours
 
 
-def define_and_solve(loader):
+def define_and_solve(loader: AbstractInputLoad) -> ResultClass:
+    """
+    タスク割り当て問題を定式化し、最適化ソルバー（PuLP）で解を求める。
+
+    スキル、タスク処理時間、依存関係、従業員の稼働率などを考慮した上で
+    最小メイクスパン（全タスク終了時間の最小化）を目的とする問題を解く。
+
+    主な制約条件:
+    - 各タスクは1人にのみ割り当てる
+    - スキルがない従業員には割り当て不可
+    - タスク依存関係を守る
+    - タスクは締切内に完了すること
+    - 同一従業員の同時タスク割り当て不可
+
+    Args:
+        loader (AbstractInputLoad): 入力データ（タスク、従業員、スキル、依存関係）を含むローダー
+
+    Returns:
+        ResultClass: 解の詳細（割り当て結果、開始・終了時間、依存関係など）
+
+    Raises:
+        SkillConflictException: 同一タスクに対してスキル1と0が混在している場合
+        InfeasibleSolutionError: 問題に実行可能な解が存在しない場合
+    """
     tasks_df = loader.loaded_dataframe.task_df
     employees_df = loader.loaded_dataframe.employees_df
     skills_df = loader.loaded_dataframe.skills_df
@@ -241,31 +275,14 @@ def define_and_solve(loader):
     # 最小化されたメイクスパン（最後のタスク終了時間）
     print(f"Makespan (total time): {pulp.value(makespan)} hours")
 
-    # result = {
-    #     "problem": problem,
-    #     "task_assignments": task_assignments,
-    #     "employees": employees,
-    #     "tasks": tasks,
-    #     "dependencies": dependencies,
-    #     "start_times_dict": start_times_dict,
-    # }
-
     result_class = ResultClass(
-        problem=problem,
-        task_assignments=task_assignments,
-        employees=employees,
-        tasks=tasks,
-        dependencies=dependencies,
+        problem_list=problem,
+        task_assignments_list=task_assignments,
+        employees_list=employees,
+        tasks_list=tasks,
+        dependencies_list=dependencies,
         start_times_dict=start_times_dict,
     )
-
     print(result_class.task_assignments_list)
-
-    # print(type(result))
-    # print(type(task_assignments))
-    # print(type(employees))
-    # print(type(tasks))
-    # print(type(dependencies))
-    # print(type(start_times_dict))
 
     return result_class

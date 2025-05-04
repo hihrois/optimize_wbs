@@ -8,3 +8,4 @@ streamlit==1.38.0
 yamllint
 japanize-matplotlib
 networkx
+pytest

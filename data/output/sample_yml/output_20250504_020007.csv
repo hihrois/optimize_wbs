@@ -1,0 +1,4 @@
+Employee,Task,StartTime,EndTime
+Alice,assign_member,2024-09-18,2024-09-18
+Bob,write_deck,2024-09-18,2024-09-24
+Bob,make_contract,2024-09-17,2024-09-18

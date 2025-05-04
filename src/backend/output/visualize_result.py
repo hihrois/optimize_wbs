@@ -1,4 +1,5 @@
 import os
+import sys
 import uuid
 from datetime import datetime, timedelta
 
@@ -6,6 +7,10 @@ import jpholiday  # 日本の祝日ライブラリ
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
+
+sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
+from src.backend.compute.result_class import ResultClass
+from src.backend.load.load_input_file import AbstractInputLoad
 
 
 def is_business_day(date):
@@ -30,7 +35,20 @@ def generate_business_days(start_date, total_days):
 
 
 # 8. ガントチャートの描画
-def plot_gantt_chart(loader, result_class):
+def plot_gantt_chart(loader: AbstractInputLoad, result_class: ResultClass) -> str:
+    """
+    タスク割り当て結果に基づいて、従業員ごとのガントチャートを描画・保存する。
+
+    タスクのスケジュール（開始・終了時間）、従業員別の色分け、タスク間の依存関係（矢印）、
+    日付の営業日変換（祝日・土日除外）などを含んだ視覚的なスケジュール図を出力する。
+
+    Args:
+        loader (AbstractInputLoad): 入力設定を保持するローダー。プロジェクト開始日や勤務時間などを参照。
+        result_class (ResultClass): 最適化によって得られた結果。タスク・従業員・依存関係などを含む。
+
+    Returns:
+        str: ガントチャート画像を保存したファイルパス（※現在は未保存で `plt.show()` のみ実行）。
+    """
 
     # def __init__(
     #     self, problem, task_assignments, employees, tasks, dependencies, start_times_dict

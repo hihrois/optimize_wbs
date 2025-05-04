@@ -4,7 +4,21 @@ import networkx as nx
 
 
 class LoadedDataframe:
+    """
+    複数の入力データ（タスク、従業員、スキル、依存関係）を保持し、
+    各データの整合性を検証するクラス。
+    """
+
     def __init__(self, task_df, employees_df, skills_df, dependencies_df):
+        """
+        各データフレームを初期化する。
+
+        Args:
+            task_df (pd.DataFrame): タスク情報のデータフレーム
+            employees_df (pd.DataFrame): 従業員情報のデータフレーム
+            skills_df (pd.DataFrame): スキル情報のデータフレーム
+            dependencies_df (pd.DataFrame): タスク間の依存関係のデータフレーム
+        """
         self.task_df = task_df
         self.employees_df = employees_df
         self.skills_df = skills_df
@@ -51,7 +65,16 @@ class LoadedDataframe:
     # 5      TaskN     TaskE
     # 6      TaskF     TaskA)
 
-    def _validate_task_df(self):
+    def _validate_task_df(self) -> None:
+        """
+        タスクデータの検証を行う。
+
+        - 必須列（Task, ProcessingTime）の NaN・空文字・重複のチェック
+        - DeadLineDate のフォーマットが 'YYYYMMDD' か確認
+
+        Raises:
+            ValueError: 不整合なデータが存在する場合、詳細メッセージ付きで例外をスロー
+        """
         task_df = self.task_df
         employees_df = self.employees_df
         skills_df = self.skills_df
@@ -89,7 +112,16 @@ class LoadedDataframe:
         else:
             print("✅ 検証成功！問題ありません。")
 
-    def _validate_employees_df(self):
+    def _validate_employees_df(self) -> None:
+        """
+        従業員データの検証を行う。
+
+        - Employee列とRate列のNaN・空文字チェック
+        - Rate列の値が 0〜1 の範囲内であるかを確認
+
+        Raises:
+            ValueError: 不整合なデータが存在する場合、詳細メッセージ付きで例外をスロー
+        """
         task_df = self.task_df
         employees_df = self.employees_df
         skills_df = self.skills_df
@@ -128,7 +160,16 @@ class LoadedDataframe:
         else:
             print("✅ 検証成功！問題ありません。")
 
-    def _validate_skills_df(self):
+    def _validate_skills_df(self) -> None:
+        """
+        スキルデータの検証を行う。
+
+        - 必須列（Employee, Task, IsCapable）の存在とNaN・空文字チェック
+        - Employee列とTask列の値が他のデータフレームに存在するかを確認
+
+        Raises:
+            ValueError: 不整合なデータが存在する場合、詳細メッセージ付きで例外をスロー
+        """
         task_df = self.task_df
         employees_df = self.employees_df
         skills_df = self.skills_df
@@ -174,7 +215,17 @@ class LoadedDataframe:
         else:
             print("✅ skills_df 検証成功！問題ありません。")
 
-    def _validate_dependencies_df(self):
+    def _validate_dependencies_df(self) -> None:
+        """
+        タスクの依存関係データの検証を行う。
+
+        - 必須列（BeforeTask, AfterTask）の存在確認とNaN・空文字チェック
+        - 各タスク名がtask_df内に存在するかのチェック
+        - 循環依存（サイクル）の有無を networkx を用いて確認
+
+        Raises:
+            ValueError: 不整合なデータや循環依存が存在する場合、詳細メッセージ付きで例外をスロー
+        """
         task_df = self.task_df
         employees_df = self.employees_df
         skills_df = self.skills_df
@@ -237,6 +288,15 @@ class LoadedDataframe:
             print("✅ dependencies_df 検証成功！問題ありません。")
 
     def validate(self) -> bool:
+        """
+        全てのデータフレームに対して検証を実行する。
+
+        Returns:
+            bool: 検証に成功した場合は True を返す。
+
+        Raises:
+            ValueError: 各検証メソッドにより不整合が検出された場合にスロー
+        """
         # エラーの場合はその場でValueErrorをスロー
         self._validate_task_df()
         self._validate_employees_df()

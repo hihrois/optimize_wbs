@@ -9,16 +9,36 @@ from dotenv import load_dotenv
 
 sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
 
+from src.backend.compute.result_class import ResultClass
 from src.backend.config.load_config import load_config
+from src.backend.load.load_input_file import AbstractInputLoad
 
 
-def is_business_day(date):
-    """指定された日付が営業日かどうかを判定する関数"""
+def is_business_day(date: datetime.datetime) -> bool:
+    """
+    指定された日付が営業日（平日かつ祝日でない日）かどうかを判定する。
+
+    Args:
+        date (datetime.datetime): 判定対象の日付。
+
+    Returns:
+        bool: 営業日の場合は True、それ以外（土日または祝日）の場合は False。
+    """
     return date.weekday() < 5 and not jpholiday.is_holiday(date)
 
 
 # 営業日のみを扱うための関数（祝日も除外）
-def generate_business_days(start_date, total_days):
+def generate_business_days(start_date: datetime.datetime, total_days: int) -> list:
+    """
+    指定された開始日から数えて、営業日（平日かつ祝日でない日）のみを対象に、指定日数分の日付リストを生成する。
+
+    Args:
+        start_date (datetime.datetime): 営業日計算を開始する日付。
+        total_days (int): 取得したい営業日数。
+
+    Returns:
+        list: 取得された営業日を "YYYY-MM-DD" 形式の文字列で格納したリスト。
+    """
     business_days = []
     current_date = start_date
     days_added = 0
@@ -33,7 +53,22 @@ def generate_business_days(start_date, total_days):
     return business_days
 
 
-def convert_into_abs(loaded_info, result_class):
+def convert_into_abs(loaded_info: AbstractInputLoad, result_class: ResultClass) -> list:
+    """
+    タスク割り当ての開始・終了時間（時間単位）を営業日ベースの日付（文字列）に変換する。
+
+    `result_class` に含まれるタスク割り当て結果（時間単位）を、
+    プロジェクト開始日と 1日あたりの作業時間に基づいて、
+    実際の営業日（日付）形式に変換したリストを返す。
+
+    Args:
+        loaded_info (AbstractInputLoad): プロジェクト設定（開始日や作業時間）を含む入力データローダー。
+        result_class (ResultClass): 最適化によって得られたタスク割り当て結果。
+
+    Returns:
+        list: 各タスクの割り当て情報のリスト。
+              要素は (従業員名, タスク名, 開始日, 終了日) のタプルで、日付は "YYYY-MM-DD" 形式の文字列。
+    """
     task_assignments = result_class.task_assignments_list
     # print(result_class.task_assignments_list)
     project_start_date = loaded_info.config_input["common"]["project"]["start_date"]
@@ -64,26 +99,38 @@ def convert_into_abs(loaded_info, result_class):
     return task_assignments_abs_date
 
 
-class UnloadStrategy(ABC):
-    # def __init__(self):
-    #     # .envファイルの内容を読み込む
-    #     load_dotenv()
-
-    #     # .envファイルから環境変数を取得
-    #     self.project_root_path = os.getenv("PROJECT_ROOT_PATH")
-    #     self.config = load_config()["load"]
-    #     self.input_folder_path = self.config["input_folder_path"]
-
-    #     self.loaded_dataframe = LoadedDataframe(
-    #         pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-    #     )
+class AbstractUnload(ABC):
     @abstractmethod
-    def unload(self, loaded_info, result_class, task_assignments_abs_date):
+    def unload(
+        self,
+        loaded_info: AbstractInputLoad,
+        result_class: ResultClass,
+        task_assignments_abs_date: list,
+    ) -> None:
         pass
 
 
-class CsvUnloader(UnloadStrategy):
-    def unload(self, loaded_info, result_class, task_assignments_abs_date):
+class CsvUnloader(AbstractUnload):
+    def unload(
+        self,
+        loaded_info: AbstractInputLoad,
+        result_class: ResultClass,
+        task_assignments_abs_date: list,
+    ) -> None:
+        """
+        タスク割り当て結果をCSVファイルに出力する。
+
+        出力先パスは `.env` の PROJECT_ROOT_PATH と設定ファイルの input_folder_path に基づいて動的に決定される。
+        出力ファイル名にはタイムスタンプ（YYYYMMDD_HHMMSS）が付与される。
+
+        Args:
+            loaded_info (AbstractInputLoad): 入力ファイルのロードに使ったローダー。パス構成などの設定を利用。
+            result_class (ResultClass): 最適化処理によって得られた結果（未使用だが、将来的な拡張用に保持）。
+            task_assignments_abs_date (list): 書き出すデータのリスト。形式は [(従業員, タスク, 開始日, 終了日), ...]。
+
+        Returns:
+            None
+        """
         # .envファイルの内容を読み込む
         load_dotenv()
 
@@ -112,11 +159,22 @@ class CsvUnloader(UnloadStrategy):
             writer.writerows(task_assignments_abs_date)  # データ本体
 
 
-def unload_result(loaded_info, result_class):
+def unload_result(loaded_info: AbstractInputLoad, result_class: ResultClass) -> None:
+    """
+    最適化結果を実行形式（CSVファイル）に変換・保存する処理を実行する。
+
+    この関数は、タスク割り当て結果（時間単位）を営業日ベースの日付に変換し、
+    `CsvUnloader` を用いてCSVファイルとして出力する一連の流れをカプセル化している。
+
+    Args:
+        loaded_info (AbstractInputLoad): プロジェクト設定と入力データを含むローダー。
+        result_class (ResultClass): 最適化によって得られたタスク割り当て結果。
+
+    Returns:
+        None
+    """
     # インスタンス化
     # loader = CsvLoader()
     task_assignments_abs_date = convert_into_abs(loaded_info, result_class)
     unloader = CsvUnloader()
     unloader.unload(loaded_info, result_class, task_assignments_abs_date)
-
-    return
