@@ -1,15 +1,11 @@
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from datetime import datetime, timedelta
-import jpholiday  # 日本の祝日ライブラリ
-import uuid
 import os
-from dotenv import load_dotenv
-import sys
-import japanize_matplotlib
+import uuid
+from datetime import datetime, timedelta
 
-sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
-from src.backend.config.load_config import load_config
+import jpholiday  # 日本の祝日ライブラリ
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
 
 def is_business_day(date):

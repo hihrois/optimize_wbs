@@ -1,0 +1,35 @@
+{
+  "name": "Python Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  // "features": {
+  //   "ghcr.io/devcontainers/features/python:1": {
+  //     "version": "3.11"
+  //   }
+  // },
+  // "forwardPorts": [8000],
+  "postCreateCommand": "pip install -r requirements.txt",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "fish": {
+            "path": "/usr/bin/fish",
+            "args": ["-1"]
+          }
+        }
+      },
+      "extensions": [
+        "ms-python.python",         // Python言語サポート
+        "ms-python.black-formatter", // Black フォーマッター
+        "ms-python.isort",           // importの並び替え
+        "ms-python.autopep8",        // autopep8 フォーマッター
+        "ms-python.flake8",           // Flake8 (フォーマットチェック)
+        "charliermarsh.ruff",
+        "oderwat.indent-rainbow",
+        "eamodio.gitlens"
+      ]
+    }
+  }
+}

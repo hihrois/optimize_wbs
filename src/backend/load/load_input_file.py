@@ -1,17 +1,18 @@
 import os
-from dotenv import load_dotenv
-import pandas as pd
-from dataclasses import dataclass
 import sys
-import yaml
 from abc import ABC, abstractmethod
 
+import pandas as pd
+import yaml
+from dotenv import load_dotenv
+
 sys.path.append(os.getenv("PROJECT_ROOT_PATH"))
+
 from src.backend.config.load_config import load_config
 from src.backend.load.loaded_dataframe import LoadedDataframe
 
 
-class InputLoadStrategy(ABC):
+class AbstractInputLoad(ABC):
     def __init__(self):
         # .envファイルの内容を読み込む
         load_dotenv()
@@ -31,8 +32,12 @@ class InputLoadStrategy(ABC):
     def load_input_file(self, path: str) -> LoadedDataframe:
         pass
 
+    def validate(self):
+        # validation
+        self.loaded_dataframe.validate()
 
-class CsvLoad(InputLoadStrategy):
+
+class CsvLoad(AbstractInputLoad):
     def load_input_file(self) -> LoadedDataframe:
         # CSVからデータを読み込む
         self.loaded_dataframe.task_df = pd.read_csv(
@@ -52,7 +57,7 @@ class CsvLoad(InputLoadStrategy):
         return self.loaded_dataframe
 
 
-class YamlLoad(InputLoadStrategy):
+class YamlLoad(AbstractInputLoad):
     def load_input_file(self) -> LoadedDataframe:
         root_path = self.project_root_path + self.input_folder_path + "input.yml"
         with open(root_path, "r") as f:
@@ -115,8 +120,5 @@ def load_input_file():
     loaded_dataframe = loader.load_input_file()
     # print(loaded_dataframe.skills_df)
     # sys.exit(0)
-
-    # validation
-    loaded_dataframe.validate()
 
     return loader

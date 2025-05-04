@@ -12,6 +12,12 @@ task:
     depends_on:
       - "make_contract"
 
+  - task_name: "write_deck"
+    processing_time: 22
+    deadline: "20250222"
+    depends_on:
+      - "make_contract"
+
   - task_name: "make_contract"
     processing_time: 10
     deadline: "20241111"
